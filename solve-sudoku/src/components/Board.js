@@ -1,5 +1,6 @@
 import React from "react";
 import Cell from "../classes/Cell";
+import boardRaw from "../classes/Match.js";
 import "./Board.css";
 
 const NUMBER_VALUES = 9;
@@ -8,100 +9,7 @@ class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      // boardRaw: [
-      //   [7, 2, 4, 8, 0, 0, 0, 0, 1],
-      //   [0, 8, 0, 3, 0, 7, 0, 0, 0],
-      //   [0, 5, 0, 0, 0, 4, 0, 0, 0],
-      //   [0, 0, 5, 7, 8, 0, 0, 1, 0],
-      //   [8, 0, 0, 0, 9, 3, 0, 7, 2],
-      //   [2, 0, 9, 1, 4, 0, 0, 5, 3],
-      //   [0, 0, 0, 6, 0, 0, 5, 0, 7],
-      //   [1, 3, 0, 0, 2, 5, 9, 0, 6],
-      //   [0, 0, 0, 9, 0, 8, 1, 0, 0],
-      // ],
-      boardRaw: [
-        7,
-        2,
-        4,
-        8,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        8,
-        0,
-        3,
-        0,
-        7,
-        0,
-        0,
-        0,
-        0,
-        5,
-        0,
-        0,
-        0,
-        4,
-        0,
-        0,
-        0,
-        0,
-        0,
-        5,
-        7,
-        8,
-        0,
-        0,
-        1,
-        0,
-        8,
-        0,
-        0,
-        0,
-        9,
-        3,
-        0,
-        7,
-        2,
-        2,
-        0,
-        9,
-        1,
-        4,
-        0,
-        0,
-        5,
-        3,
-        0,
-        0,
-        0,
-        6,
-        0,
-        0,
-        5,
-        0,
-        7,
-        1,
-        3,
-        0,
-        0,
-        2,
-        5,
-        9,
-        0,
-        6,
-        0,
-        0,
-        0,
-        9,
-        0,
-        8,
-        1,
-        0,
-        0,
-      ],
+      boardRaw,
       board: [],
       isSolved: false,
     };
@@ -212,7 +120,13 @@ class Board extends React.Component {
 
 function Row(props) {
   const { data } = props;
-  const cells = data.map((item, idx) => <td>{item.val!==0?item.val:null}</td>);
+  const cells = data.map((item, idx) =>
+  (item.possible ?
+    <td className='newvalue'><span>{item.val!==0?item.val:null}</span></td>
+    :
+    <td className='oldvalue'><span>{item.val!==0?item.val:null}</span></td>
+  )
+  );
   return <tr>{cells}</tr>;
 }
 
