@@ -1,12 +1,12 @@
-table {
+.boardtable {
   border-collapse: collapse;
   font-family: Calibri, sans-serif;
 }
-colgroup,
-tbody {
+.boardcolgroup,
+.boardtbody {
   border: solid medium;
 }
-td {
+.boardtd {
   border: solid thin;
   height: 1.4em;
   width: 1.4em;
@@ -20,6 +20,10 @@ td {
 
 .newvalue span {
 	color: red;
+}
+
+li {
+	font-size: 15px;
 }
 
 button {
