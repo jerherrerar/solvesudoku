@@ -12,11 +12,15 @@ class Board extends React.Component {
       boardRaw,
       board: [],
       isSolved: false,
+      messages: [],
     };
   }
 
   componentDidMount() {
     this.createCells();
+    this.setState({
+      messages: [...this.state.messages, "THE GAME STARTED"],
+    });
   }
 
   createCells = () => {
@@ -52,22 +56,42 @@ class Board extends React.Component {
 
     //VERIFY IF THERE IS ONLY ONE TRUE
     let isSolved = true;
+    let messages = [];
     board.forEach((item) => {
-      if (item.val == 0) {
+      if (item.val === 0) {
         const sum = item.possible.reduce((a, b) => a + b, 0);
-        if (sum == 1) {
+        if (sum === 1) {
           const index = item.possible.findIndex((item2) => item2 === 1);
           item.val = index + 1;
-          console.log(`NEW VALUE(${item.val})  ---->  Row:${item.row+1}  Col:${item.col+1}`);          
-        }
-        else{
+          console.log(
+            `NEW VALUE(${item.val})  ---->  Row:${item.row + 1}  Col:${
+              item.col + 1
+            }`
+          );
+          messages.push(
+            `${item.val} in Row:${item.row + 1}  Col:${item.col + 1} `
+          );
+        } else {
           isSolved = false;
         }
       }
     });
+    this.setState({
+      messages: [...this.state.messages, ...messages],
+    });
 
     //SAVE
-    this.setState({ board, isSolved });
+    this.setState({ board });
+
+    if (isSolved) {
+      this.setState({
+        messages: [
+          ...this.state.messages,
+          "THE GAME FINISHED.CONGRATULATIONS!!!",
+        ],
+        isSolved,
+      });
+    }
   };
 
   render() {
@@ -75,6 +99,7 @@ class Board extends React.Component {
     for (var i = 0; i < NUMBER_VALUES; i++) {
       content.push(
         <Row
+          key={i}
           data={this.state.board.slice(
             i * NUMBER_VALUES,
             (i + 1) * NUMBER_VALUES
@@ -84,36 +109,44 @@ class Board extends React.Component {
     }
 
     return (
-      <div>
-        <br />
-        <table>
-          <caption>Solve Sudoku</caption>
-          <colgroup>
-            <col />
-            <col />
-            <col />
-          </colgroup>
-          <colgroup>
-            <col />
-            <col />
-            <col />
-          </colgroup>
-          <colgroup>
-            <col />
-            <col />
-            <col />
-          </colgroup>
-          <tbody>{content}</tbody>
-        </table>
-        <div>
-          <br />
-          {this.state.isSolved ?
-            <button>CONGRATULATIONS</button>
-            :
-            <button onClick={this.solve}>SOLVE</button> 
-          }
-        </div>
-      </div>
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <table className="boardtable">
+                <caption>Solve Sudoku</caption>
+                <colgroup className="boardcolgroup">
+                  <col />
+                  <col />
+                  <col />
+                </colgroup>
+                <colgroup className="boardcolgroup">
+                  <col />
+                  <col />
+                  <col />
+                </colgroup>
+                <colgroup className="boardcolgroup">
+                  <col />
+                  <col />
+                  <col />
+                </colgroup>
+                <tbody className="boardtbody">{content}</tbody>
+              </table>
+              <div>
+                <br />
+                {this.state.isSolved ? (
+                  <button>CONGRATULATIONS</button>
+                ) : (
+                  <button onClick={this.solve}>SOLVE</button>
+                )}
+              </div>
+            </td>
+            <td>
+              <Messages messages={this.state.messages} />
+            </td>
+          </tr>
+        </tbody>
+      </table>
     );
   }
 }
@@ -121,13 +154,28 @@ class Board extends React.Component {
 function Row(props) {
   const { data } = props;
   const cells = data.map((item, idx) =>
-  (item.possible ?
-    <td className='newvalue'><span>{item.val!==0?item.val:null}</span></td>
-    :
-    <td className='oldvalue'><span>{item.val!==0?item.val:null}</span></td>
-  )
+    item.possible ? (
+      <td key={idx} className="newvalue boardtd">
+        <span>{item.val !== 0 ? item.val : null}</span>
+      </td>
+    ) : (
+      <td key={idx} className="oldvalue boardtd">
+        <span>{item.val !== 0 ? item.val : null}</span>
+      </td>
+    )
   );
   return <tr>{cells}</tr>;
+}
+
+function Messages(props) {
+  const { messages } = props;
+  const listItems = messages.map((item, idx) => <li key={idx}>{item}</li>);
+  return (
+    <>
+      <h4>MESSAGES</h4>
+      <ul>{listItems}</ul>
+    </>
+  );
 }
 
 export default Board;
