@@ -12,7 +12,11 @@ class Board extends React.Component {
       boardRaw,
       board: [],
       isSolved: false,
+      error: false,
       messages: [],
+      newVal: "",
+      newRow: "",
+      newCol: "",
     };
   }
 
@@ -36,6 +40,8 @@ class Board extends React.Component {
   };
 
   solve = () => {
+    if (this.state.error) return;
+
     let { board } = this.state;
 
     //UPDATE POSSIBLE VALUES OF EACH CELL
@@ -57,7 +63,7 @@ class Board extends React.Component {
     //VERIFY IF THERE IS ONLY ONE TRUE
     let isSolved = true;
     let messages = [];
-    board.forEach((item) => {
+    for (let item of board) {
       if (item.val === 0) {
         const sum = item.possible.reduce((a, b) => a + b, 0);
         if (sum === 1) {
@@ -71,11 +77,17 @@ class Board extends React.Component {
           messages.push(
             `${item.val} in Row:${item.row + 1}  Col:${item.col + 1} `
           );
+        } else if (sum === 0) {
+          this.setState({
+            error: true,
+          });
+          messages.push(`ERROR`);
+          break;
         } else {
           isSolved = false;
         }
       }
-    });
+    }
     this.setState({
       messages: [...this.state.messages, ...messages],
     });
@@ -92,6 +104,162 @@ class Board extends React.Component {
         isSolved,
       });
     }
+  };
+
+  solveSquareRowCol = () => {
+    if (this.state.error) return;
+
+    var { board } = this.state;
+    var squaresAux = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    var rowsAux = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    var colsAux = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    var squaresAuxJson = {};
+    var rowsAuxJson = {};
+    var colsAuxJson = {};
+    var cellsToUpdate = {};
+    var messages = [];
+
+    for (let item of board) {
+      if (item.val === 0) {
+        item.possible.forEach((item2, idx) => {
+          squaresAux[item.square][idx] = squaresAux[item.square][idx] + item2;
+          rowsAux[item.row][idx] = rowsAux[item.row][idx] + item2;
+          colsAux[item.col][idx] = colsAux[item.col][idx] + item2;
+        });
+      }
+    }
+    // console.log("squaresAux", squaresAux);
+    // console.log("rowsAux", rowsAux);
+    // console.log("colsAux", colsAux);
+
+    squaresAux.forEach((item, idx) => {
+      item.forEach((item2, idx2) => {
+        if (item2 === 1) {
+          console.log(item2, "**", idx + 1, "**", idx2 + 1);
+          squaresAuxJson[idx] = idx2;
+        }
+      });
+    });
+    rowsAux.forEach((item, idx) => {
+      item.forEach((item2, idx2) => {
+        if (item2 === 1) {
+          //console.log(item2, "**", idx + 1, "**", idx2 + 1);
+          rowsAuxJson[idx] = idx2;
+        }
+      });
+    });
+    colsAux.forEach((item, idx) => {
+      item.forEach((item2, idx2) => {
+        if (item2 === 1) {
+          colsAuxJson[idx] = idx2;
+        }
+      });
+    });
+    // console.log("squaresAuxJson", squaresAuxJson);
+    // console.log("rowsAuxJson", rowsAuxJson);
+    // console.log("colsAuxJson", colsAuxJson);
+    for (let item of board) {
+      if (item.val !== 0) continue;
+      for (let name in squaresAuxJson) {
+        if (item.square === parseInt(name)) {
+          if (item.possible[squaresAuxJson[name]] === 1) {
+            //item.val = squaresAuxJson[name] +1;
+            cellsToUpdate[item.row * 9 + item.col] = squaresAuxJson[name] + 1;
+            // messages.push(
+            //   `SQU-->${item.val} in Row:${item.row + 1}  Col:${item.col + 1} `
+            // );
+          }
+        }
+      }
+      for (let name in rowsAuxJson) {
+        if (item.row === parseInt(name)) {
+          if (item.possible[rowsAuxJson[name]] === 1) {
+            //item.val = rowsAuxJson[name] +1;
+            cellsToUpdate[item.row * 9 + item.col] = rowsAuxJson[name] + 1;
+            // messages.push(
+            //   `ROW-->${item.val} in Row:${item.row + 1}  Col:${item.col + 1} `
+            // );
+          }
+        }
+      }
+      for (let name in colsAuxJson) {
+        if (item.col === parseInt(name)) {
+          if (item.possible[colsAuxJson[name]] === 1) {
+            //item.val = colsAuxJson[name] +1;
+            cellsToUpdate[item.row * 9 + item.col] = colsAuxJson[name] + 1;
+            // messages.push(
+            //   `COL-->${item.val} in Row:${item.row + 1}  Col:${item.col + 1} `
+            // );
+          }
+        }
+      }
+    }
+    console.log("cellsToUpdate", cellsToUpdate);
+    for (let name in cellsToUpdate) {
+      console.log("zzzzz", name, cellsToUpdate[name]);
+      board[name].val = cellsToUpdate[name];
+      messages.push(
+        `${cellsToUpdate[name]} in Row:${board[name].row + 1}  Col:${
+          board[name].col + 1
+        } `
+      );
+    }
+    this.setState({
+      messages: [...this.state.messages, ...messages],
+      board,
+    });
+
+  };
+
+  addValue = () => {
+    if (this.state.error) return;
+    const { board, newVal, newRow, newCol } = this.state;
+    board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].val = newVal;
+    this.setState({
+      messages: [
+        ...this.state.messages,
+        `MANUAL: ${newVal} in Row:${newRow}  Col:${newCol} `,
+      ],
+    });
+  };
+
+  handleInputChange = (event) => {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+    this.setState({
+      [name]: value,
+    });
   };
 
   render() {
@@ -113,6 +281,44 @@ class Board extends React.Component {
         <tbody>
           <tr>
             <td>
+              <div>
+                <label>
+                  Value:
+                  <input
+                    type="text"
+                    name="newVal"
+                    value={this.state.newVal}
+                    onChange={this.handleInputChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Row:
+                  <input
+                    type="text"
+                    name="newRow"
+                    value={this.state.newRow}
+                    onChange={this.handleInputChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Col:
+                  <input
+                    type="text"
+                    name="newCol"
+                    value={this.state.newCol}
+                    onChange={this.handleInputChange}
+                  />
+                </label>
+              </div>
+              <div>
+                <button onClick={this.addValue}>ADD VALUE</button>
+              </div>
+            </td>
+            <td>
               <table className="boardtable">
                 <caption>Solve Sudoku</caption>
                 <colgroup className="boardcolgroup">
@@ -130,14 +336,19 @@ class Board extends React.Component {
                   <col />
                   <col />
                 </colgroup>
-                <tbody className="boardtbody">{content}</tbody>
+                <tbody className="boardtbody">{content.slice(0, 3)}</tbody>
+                <tbody className="boardtbody">{content.slice(3, 6)}</tbody>
+                <tbody className="boardtbody">{content.slice(6, 9)}</tbody>
               </table>
               <div>
-                <br />
-                {this.state.isSolved ? (
-                  <button>CONGRATULATIONS</button>
+                {!this.state.isSolved ? (
+                  <>
+                    <button onClick={this.solve}>SOLVE</button>
+                    <br />
+                    <button onClick={this.solveSquareRowCol}>SOLVE ALT</button>
+                  </>
                 ) : (
-                  <button onClick={this.solve}>SOLVE</button>
+                  <button>CONGRATULATIONS</button>
                 )}
               </div>
             </td>
