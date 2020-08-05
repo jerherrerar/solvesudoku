@@ -39,11 +39,9 @@ class Board extends React.Component {
     this.setState({ board });
   };
 
-  solve = () => {
-    if (this.state.error) return;
-
+  updatePossibles = () => {
     let { board } = this.state;
-
+    let isSolved = true;
     //UPDATE POSSIBLE VALUES OF EACH CELL
     board.forEach((item) => {
       if (item.val !== 0) {
@@ -57,11 +55,25 @@ class Board extends React.Component {
             item2.possible[item.val - 1] = 0;
           }
         });
+      } else {
+        isSolved = false;
       }
     });
+    if (isSolved) {
+      this.setState({
+        isSolved,
+      });
+    }
+  };
+
+  solve = () => {
+    if (this.state.error) return;
+
+    let { board } = this.state;
+
+    this.updatePossibles();
 
     //VERIFY IF THERE IS ONLY ONE TRUE
-    let isSolved = true;
     let messages = [];
     for (let item of board) {
       if (item.val === 0) {
@@ -83,27 +95,15 @@ class Board extends React.Component {
           });
           messages.push(`ERROR`);
           break;
-        } else {
-          isSolved = false;
         }
       }
     }
+
+    //this.setState({ board });
+
     this.setState({
       messages: [...this.state.messages, ...messages],
     });
-
-    //SAVE
-    this.setState({ board });
-
-    if (isSolved) {
-      this.setState({
-        messages: [
-          ...this.state.messages,
-          "THE GAME FINISHED.CONGRATULATIONS!!!",
-        ],
-        isSolved,
-      });
-    }
   };
 
   solveSquareRowCol = () => {
@@ -236,9 +236,79 @@ class Board extends React.Component {
     }
     this.setState({
       messages: [...this.state.messages, ...messages],
-      board,
+      // board,
     });
+  };
 
+  solveSquareRowColv2 = () => {
+    this.updatePossibles();
+    if (this.state.error) return;
+
+    var { board } = this.state;
+    var squaresAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
+    var rowsAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
+    var colsAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
+    var cellsToUpdate = {};
+    var messages = [];
+
+    board.forEach((item, idx) => {
+      if (item.val === 0) {
+        item.possible.forEach((item2, idx2) => {
+          if (item2 === 1) {
+            if (squaresAux[item.square][idx2]) {
+              squaresAux[item.square][idx2] = -1;
+            } else {
+              squaresAux[item.square][idx2] = idx;
+            }
+            if (rowsAux[item.row][idx2]) {
+              rowsAux[item.row][idx2] = -1;
+            } else {
+              rowsAux[item.row][idx2] = idx;
+            }
+            if (colsAux[item.col][idx2]) {
+              colsAux[item.col][idx2] = -1;
+            } else {
+              colsAux[item.col][idx2] = idx;
+            }
+          }
+        });
+      }
+    });
+    // console.log("squaresAux", squaresAux);
+    // console.log("rowsAux", rowsAux);
+    // console.log("colsAux", colsAux);
+
+    //GENERATE DICT WITH ALL UPDATES
+    squaresAux.forEach((item, idx) => {
+      for (let key in item) {
+        if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
+      }
+    });
+    rowsAux.forEach((item, idx) => {
+      for (let key in item) {
+        if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
+      }
+    });
+    colsAux.forEach((item, idx) => {
+      for (let key in item) {
+        if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
+      }
+    });
+    console.log("cellsToUpdate", cellsToUpdate);
+
+    //UPDATE CELLS
+    for (let key in cellsToUpdate) {
+      board[key].val = cellsToUpdate[key] + 1;
+      messages.push(
+        `${cellsToUpdate[key] + 1} in Row:${board[key].row + 1}  Col:${
+          board[key].col + 1
+        } `
+      );
+    }
+    this.setState({
+      messages: [...this.state.messages, ...messages],
+      // board,
+    });
   };
 
   addValue = () => {
@@ -345,7 +415,9 @@ class Board extends React.Component {
                   <>
                     <button onClick={this.solve}>SOLVE</button>
                     <br />
-                    <button onClick={this.solveSquareRowCol}>SOLVE ALT</button>
+                    <button onClick={this.solveSquareRowColv2}>
+                      SOLVE ALT
+                    </button>
                   </>
                 ) : (
                   <button>CONGRATULATIONS</button>
