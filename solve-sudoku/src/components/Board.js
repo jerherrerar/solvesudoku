@@ -52,7 +52,9 @@ class Board extends React.Component {
               item2.col === item.col ||
               item2.square === item.square)
           ) {
-            item2.possible[item.val - 1] = 0;
+            item2.possible = item2.possible.filter(
+              (item3) => item3 !== item.val
+            );
           }
         });
       } else {
@@ -67,7 +69,7 @@ class Board extends React.Component {
   };
 
   solve = () => {
-    if (this.state.error) return;
+    if (this.state.error || this.state.isSolved) return;
 
     let { board } = this.state;
 
@@ -77,19 +79,18 @@ class Board extends React.Component {
     let messages = [];
     for (let item of board) {
       if (item.val === 0) {
-        const sum = item.possible.reduce((a, b) => a + b, 0);
-        if (sum === 1) {
-          const index = item.possible.findIndex((item2) => item2 === 1);
-          item.val = index + 1;
-          console.log(
-            `NEW VALUE(${item.val})  ---->  Row:${item.row + 1}  Col:${
-              item.col + 1
-            }`
-          );
+        const numberPossibles = item.possible.length;
+        if (numberPossibles === 1) {
+          item.val = item.possible[0];
+          // console.log(
+          //   `NEW VALUE(${item.val})  ---->  Row:${item.row + 1}  Col:${
+          //     item.col + 1
+          //   }`
+          // );
           messages.push(
             `${item.val} in Row:${item.row + 1}  Col:${item.col + 1} `
           );
-        } else if (sum === 0) {
+        } else if (numberPossibles === 0) {
           this.setState({
             error: true,
           });
@@ -98,9 +99,6 @@ class Board extends React.Component {
         }
       }
     }
-
-    //this.setState({ board });
-
     this.setState({
       messages: [...this.state.messages, ...messages],
     });
@@ -242,7 +240,7 @@ class Board extends React.Component {
 
   solveSquareRowColv2 = () => {
     this.updatePossibles();
-    if (this.state.error) return;
+    if (this.state.error || this.state.isSolved) return;
 
     var { board } = this.state;
     var squaresAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
@@ -253,23 +251,21 @@ class Board extends React.Component {
 
     board.forEach((item, idx) => {
       if (item.val === 0) {
-        item.possible.forEach((item2, idx2) => {
-          if (item2 === 1) {
-            if (squaresAux[item.square][idx2]) {
-              squaresAux[item.square][idx2] = -1;
-            } else {
-              squaresAux[item.square][idx2] = idx;
-            }
-            if (rowsAux[item.row][idx2]) {
-              rowsAux[item.row][idx2] = -1;
-            } else {
-              rowsAux[item.row][idx2] = idx;
-            }
-            if (colsAux[item.col][idx2]) {
-              colsAux[item.col][idx2] = -1;
-            } else {
-              colsAux[item.col][idx2] = idx;
-            }
+        item.possible.forEach((item2) => {
+          if (squaresAux[item.square][item2]) {
+            squaresAux[item.square][item2] = -1;
+          } else {
+            squaresAux[item.square][item2] = idx;
+          }
+          if (rowsAux[item.row][item2]) {
+            rowsAux[item.row][item2] = -1;
+          } else {
+            rowsAux[item.row][item2] = idx;
+          }
+          if (colsAux[item.col][item2]) {
+            colsAux[item.col][item2] = -1;
+          } else {
+            colsAux[item.col][item2] = idx;
           }
         });
       }
@@ -294,20 +290,19 @@ class Board extends React.Component {
         if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
       }
     });
-    console.log("cellsToUpdate", cellsToUpdate);
 
     //UPDATE CELLS
     for (let key in cellsToUpdate) {
-      board[key].val = cellsToUpdate[key] + 1;
+      board[key].val = cellsToUpdate[key];
+      board[key].possible = [cellsToUpdate[key]];
       messages.push(
-        `${cellsToUpdate[key] + 1} in Row:${board[key].row + 1}  Col:${
+        `${cellsToUpdate[key]} in Row:${board[key].row + 1}  Col:${
           board[key].col + 1
         } `
       );
     }
     this.setState({
       messages: [...this.state.messages, ...messages],
-      // board,
     });
   };
 
@@ -413,10 +408,10 @@ class Board extends React.Component {
               <div>
                 {!this.state.isSolved ? (
                   <>
-                    <button onClick={this.solve}>SOLVE</button>
+                    <button onClick={this.solve}>SOLVE #1</button>
                     <br />
                     <button onClick={this.solveSquareRowColv2}>
-                      SOLVE ALT
+                    SOLVE #2
                     </button>
                   </>
                 ) : (
@@ -456,7 +451,9 @@ function Messages(props) {
   return (
     <>
       <h4>MESSAGES</h4>
-      <ul>{listItems}</ul>
+      <div className="box">
+        <ul>{listItems}</ul>
+      </div>
     </>
   );
 }

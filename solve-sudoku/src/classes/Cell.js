@@ -5,7 +5,7 @@ class Cell {
     this.row = row;
     this.square = square;
     if (val === 0) {
-      this.possible = [1, 1, 1, 1, 1, 1, 1, 1, 1];
+      this.possible = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     }
   }
 }
