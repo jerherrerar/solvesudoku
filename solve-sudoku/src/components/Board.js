@@ -310,7 +310,9 @@ class Board extends React.Component {
     if (this.state.error) return;
     const { board, newVal, newRow, newCol } = this.state;
     board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].val = parseInt(newVal);
-    board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].possible = [parseInt(newVal)];
+    board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].possible = [
+      parseInt(newVal),
+    ];
     this.setState({
       messages: [
         ...this.state.messages,
@@ -347,6 +349,7 @@ class Board extends React.Component {
         <tbody>
           <tr>
             <td>
+              <Suggestions board={this.state.board} />
               <div>
                 <label>
                   Value:
@@ -411,9 +414,7 @@ class Board extends React.Component {
                   <>
                     <button onClick={this.solve}>SOLVE #1</button>
                     <br />
-                    <button onClick={this.solveSquareRowColv2}>
-                    SOLVE #2
-                    </button>
+                    <button onClick={this.solveSquareRowColv2}>SOLVE #2</button>
                   </>
                 ) : (
                   <button>CONGRATULATIONS</button>
@@ -452,7 +453,30 @@ function Messages(props) {
   return (
     <>
       <h4>MESSAGES</h4>
-      <div className="box">
+      <div className="boxMessages">
+        <ul>{listItems}</ul>
+      </div>
+    </>
+  );
+}
+
+function Suggestions(props) {
+  const { board } = props;
+  const listItems = board.map((item, idx) => {
+    if (item.val === 0 && item.possible.length === 2) {
+      return (
+        <li key={idx}>
+          {item.possible[0]}-{item.possible[1]}
+          in Row:{item.row + 1}
+          in Col:{item.col + 1}
+        </li>
+      );
+    }
+  });
+  return (
+    <>
+      <h4>SUGGESTIONS</h4>
+      <div className="boxSuggestions">
         <ul>{listItems}</ul>
       </div>
     </>
