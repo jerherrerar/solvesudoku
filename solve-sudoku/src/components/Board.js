@@ -68,6 +68,11 @@ class Board extends React.Component {
     }
   };
 
+  solvex2 = () => {
+    this.solve();
+    this.solveSquareRowColv2();
+  };
+
   solve = () => {
     if (this.state.error || this.state.isSolved) return;
 
@@ -412,6 +417,8 @@ class Board extends React.Component {
               <div>
                 {!this.state.isSolved ? (
                   <>
+                    <button onClick={this.solvex2}>SOLVE</button>
+                    <br />
                     <button onClick={this.solve}>SOLVE #1</button>
                     <br />
                     <button onClick={this.solveSquareRowColv2}>SOLVE #2</button>
@@ -484,14 +491,3 @@ function Suggestions(props) {
 }
 
 export default Board;
-
-/* <View style={styles.View}> */
-
-// const styles = StyleSheet.create({
-//   View: {
-//     // backgroundColor: colors.primary,
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-// });
