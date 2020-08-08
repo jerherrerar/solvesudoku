@@ -309,7 +309,8 @@ class Board extends React.Component {
   addValue = () => {
     if (this.state.error) return;
     const { board, newVal, newRow, newCol } = this.state;
-    board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].val = newVal;
+    board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].val = parseInt(newVal);
+    board[(newRow - 1) * NUMBER_VALUES + (newCol - 1)].possible = [parseInt(newVal)];
     this.setState({
       messages: [
         ...this.state.messages,
