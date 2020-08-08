@@ -69,8 +69,10 @@ class Board extends React.Component {
   };
 
   solvex2 = () => {
-    this.solve();
-    this.solveSquareRowColv2();
+    for (let index = 0; index < 20; index++) {
+      this.solve();
+      this.solveSquareRowColv2();
+    }
   };
 
   solve = () => {
@@ -326,6 +328,22 @@ class Board extends React.Component {
     });
   };
 
+  addPossibleValue = (val, idx) => {
+    if (this.state.error) return;
+    const { board } = this.state;
+    board[idx].val = parseInt(val);
+    board[idx].possible = [
+      parseInt(val),
+    ];
+    this.setState({
+      messages: [
+        ...this.state.messages,
+        `POSSIBLE: ${val} in Row:${board[idx].row}  Col:${board[idx].col} `,
+      ],
+    });
+    this.updatePossibles();
+  };
+
   handleInputChange = (event) => {
     const target = event.target;
     const value = target.value;
@@ -354,8 +372,8 @@ class Board extends React.Component {
         <tbody>
           <tr>
             <td>
-              <Suggestions board={this.state.board} />
-              <div>
+              <Suggestions board={this.state.board} addPossibleValue={this.addPossibleValue}/>
+              {/* <div>
                 <label>
                   Value:
                   <input
@@ -390,7 +408,7 @@ class Board extends React.Component {
               </div>
               <div>
                 <button onClick={this.addValue}>ADD VALUE</button>
-              </div>
+              </div> */}
             </td>
             <td>
               <table className="boardtable">
@@ -468,24 +486,27 @@ function Messages(props) {
 }
 
 function Suggestions(props) {
-  const { board } = props;
+  const { board, addPossibleValue } = props;
   const listItems = board.map((item, idx) => {
     if (item.val === 0 && item.possible.length === 2) {
       return (
-        <li key={idx}>
-          {item.possible[0]}-{item.possible[1]}
-          in Row:{item.row + 1}
-          in Col:{item.col + 1}
+       <li>Row:{item.row+1} in Col:{item.col+1}
+        <ul>
+        <li key={'0'+idx} onClick={()=> addPossibleValue(item.possible[0],idx)}>
+          {item.possible[0]}
         </li>
+        <li key={'1'+idx} onClick={()=> addPossibleValue(item.possible[1],idx)}>
+          {item.possible[1]}
+        </li>
+        </ul>
+       </li>
       );
     }
   });
   return (
     <>
       <h4>SUGGESTIONS</h4>
-      <div className="boxSuggestions">
-        <ul>{listItems}</ul>
-      </div>
+      <ul>{listItems}</ul>
     </>
   );
 }
