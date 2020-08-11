@@ -1,9 +1,10 @@
 import React from "react";
 import Cell from "../classes/Cell";
 import boardRaw from "../classes/Match.js";
-import { Tooltip, Button, Divider, List } from "antd";
+import { Tooltip, Button, Divider, List, Input } from "antd";
 import "./Board.css";
 
+const { TextArea } = Input;
 const NUMBER_VALUES = 9;
 
 class Board extends React.Component {
@@ -13,7 +14,7 @@ class Board extends React.Component {
       board: [],
       isSolved: false,
       error: false,
-      messages: [],
+      script: "",
       newVal: "",
       newRow: "",
       newCol: "",
@@ -32,10 +33,7 @@ class Board extends React.Component {
       const square = Math.trunc(row / block) * block + Math.trunc(col / block);
       return new Cell(item, col, row, square);
     });
-    this.setState(
-      { board, messages: [...this.state.messages, "THE GAME STARTED"] },
-      this.updatePossibles
-    );
+    this.setState({ board }, this.updatePossibles);
   };
 
   updatePossibles = () => {
@@ -92,12 +90,6 @@ class Board extends React.Component {
           this.setState(
             {
               error: true,
-              messages: [
-                ...this.state.messages,
-                `ERROR: numberPossible=0 in Row:${board[idx].row + 1} Col:${
-                  board[idx].col + 1
-                }`,
-              ],
             },
             () => {
               return;
@@ -111,7 +103,6 @@ class Board extends React.Component {
     var squaresAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
     var rowsAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
     var colsAux = [{}, {}, {}, {}, {}, {}, {}, {}, {}];
-    var cellsToUpdate = {};
     board.forEach((item, idx) => {
       if (item.val === 0) {
         item.possible.forEach((item2) => {
@@ -136,34 +127,29 @@ class Board extends React.Component {
     // console.log("squaresAux", squaresAux);
     // console.log("rowsAux", rowsAux);
     // console.log("colsAux", colsAux);
-    squaresAux.forEach((item, idx) => {
+    squaresAux.forEach((item) => {
       for (let key in item) {
-        if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
         if (item[key] !== -1) changes[item[key]] = parseInt(key);
       }
     });
-    rowsAux.forEach((item, idx) => {
+    rowsAux.forEach((item) => {
       for (let key in item) {
-        if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
         if (item[key] !== -1) changes[item[key]] = parseInt(key);
       }
     });
-    colsAux.forEach((item, idx) => {
+    colsAux.forEach((item) => {
       for (let key in item) {
-        if (item[key] !== -1) cellsToUpdate[item[key]] = parseInt(key);
         if (item[key] !== -1) changes[item[key]] = parseInt(key);
       }
     });
 
     // RESULT
     // console.log("changes", changes);
-    // console.log("cellsToUpdate", cellsToUpdate);
     this.addAndVerify(changes);
   };
 
   addAndVerify = (changes) => {
     let { board } = this.state;
-    let messages = [];
     for (let name in changes) {
       board.forEach((item, idx) => {
         if (
@@ -175,26 +161,14 @@ class Board extends React.Component {
         ) {
           this.setState({
             error: true,
-            messages: [
-              ...this.state.messages,
-              `ERROR: Duplicate:${item.val} in Row:${item.row + 1} Col:${
-                item.col + 1
-              } with Row:${board[name].row + 1} Col:${board[name].col + 1}`,
-            ],
           });
         }
       });
       board[name].val = changes[name];
       board[name].possible = [changes[name]];
-      messages.push(
-        `${changes[name]} in Row:${board[name].row + 1}  Col:${
-          board[name].col + 1
-        } `
-      );
     }
     this.updatePossibles();
     this.setState({
-      messages: [...this.state.messages, ...messages],
       board,
     });
   };
@@ -203,6 +177,18 @@ class Board extends React.Component {
     var newVal = {};
     newVal[idx] = val;
     this.addAndVerify(newVal);
+  };
+
+  generateJqueryScripts = () => {
+    const { board } = this.state;
+    let script = "";
+    board.forEach((item, idx) => {
+      if (item.possible) {
+        script = `${script}$('#cas${idx}').val(${item.val})
+`;
+      }
+    });
+    this.setState({ script });
   };
 
   handleInputChange = (event) => {
@@ -267,12 +253,17 @@ class Board extends React.Component {
                     SOLVE
                   </Button>
                 ) : (
-                  <Button type="primary">CONGRATULATIONS</Button>
+                  <>
+                    <Button type="primary">CONGRATULATIONS</Button>
+                    <Button type="primary" onClick={this.generateJqueryScripts}>
+                      SCRIPTS
+                    </Button>
+                  </>
                 )}
               </div>
             </td>
             <td>
-              <Messages messages={this.state.messages} />
+              <TextArea rows={4} value={this.state.script} />
             </td>
           </tr>
         </tbody>
@@ -285,8 +276,8 @@ function Row(props) {
   const { data } = props;
   const cells = data.map((item, idx) =>
     item.possible && item.possible.length > 1 ? (
-      <Tooltip placement="top" title={item.possible} color="green">
-        <td key={idx} className="newvalue boardtd">
+      <Tooltip placement="top" title={item.possible} key={idx} color="green">
+        <td className="newvalue boardtd">
           <span>{item.val !== 0 ? item.val : null}</span>
         </td>
       </Tooltip>
@@ -303,22 +294,6 @@ function Row(props) {
   return <tr>{cells}</tr>;
 }
 
-function Messages(props) {
-  const { messages } = props;
-  return (
-    <>
-      <Divider orientation="center">MESSAGES</Divider>
-      <div className="boxMessages">
-        <List
-          size="small"
-          bordered
-          dataSource={messages}
-          renderItem={(item) => <List.Item>{item}</List.Item>}
-        />
-      </div>
-    </>
-  );
-}
 
 function Suggestions(props) {
   const { board, addPossibleValue } = props;
@@ -360,5 +335,3 @@ function Suggestions(props) {
 }
 
 export default Board;
-
-// $('#cas10').val(3);
