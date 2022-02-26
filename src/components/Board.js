@@ -1,8 +1,8 @@
 import React from "react";
 import Cell from "../classes/Cell";
-import boardRaw from "../classes/Match.js";
 import { Tooltip, Button, Divider, List, Input } from "antd";
 import "./Board.css";
+import { parseBoardHtmlJson } from "../utils";
 
 const { TextArea } = Input;
 const NUMBER_VALUES = 9;
@@ -19,13 +19,12 @@ class Board extends React.Component {
       newRow: "",
       newCol: "",
     };
+    this.boardRef = React.createRef();
   }
 
-  componentDidMount() {
-    this.createCells();
-  }
-
-  createCells = () => {
+  uploadBoard = () => {
+    const boardHtml = this.boardRef.current.state.value;
+    const boardRaw = parseBoardHtmlJson(boardHtml);
     const board = boardRaw.map((item, idx) => {
       const block = Math.sqrt(NUMBER_VALUES);
       const col = idx % NUMBER_VALUES;
@@ -182,10 +181,13 @@ class Board extends React.Component {
   generateJqueryScripts = () => {
     const { board } = this.state;
     let script = "";
-    board.forEach((item, idx) => {
+    board.forEach((item, idx, arr) => {
       if (item.possible) {
         script = `${script}$('#cas${idx}').val(${item.val})
 `;
+      }
+      if (idx === arr.length - 1) {
+        script = `${script}$('#cas${idx}').keyup()`;
       }
     });
     this.setState({ script });
@@ -217,6 +219,17 @@ class Board extends React.Component {
     return (
       <table>
         <tbody>
+          <tr style={{ borderBottom: "60px solid" }}>
+            <td colSpan={3}>
+              <Divider orientation="center" style={{ color: "#1890ff" }}>
+                SUDOKU HTML
+              </Divider>
+              <TextArea rows={4} ref={this.boardRef} />
+              <Button type="primary" onClick={this.uploadBoard}>
+                UPLOAD BOARD
+              </Button>
+            </td>
+          </tr>
           <tr>
             <td>
               <Suggestions
@@ -254,9 +267,11 @@ class Board extends React.Component {
                   </Button>
                 ) : (
                   <>
-                    <Button type="primary">CONGRATULATIONS</Button>
+                    <Button type="primary" style={{ marginRight: 25 }}>
+                      CONGRATULATIONS!!!
+                    </Button>
                     <Button type="primary" onClick={this.generateJqueryScripts}>
-                      SCRIPTS
+                      GENERATE SCRIPTS
                     </Button>
                   </>
                 )}
@@ -294,12 +309,13 @@ function Row(props) {
   return <tr>{cells}</tr>;
 }
 
-
 function Suggestions(props) {
   const { board, addPossibleValue } = props;
   return (
     <>
-      <Divider orientation="center">SUGGESTIONS</Divider>
+      <Divider orientation="center" style={{ color: "#1890ff" }}>
+        SUGGESTIONS
+      </Divider>
       <div className="boxMessages">
         <List
           size="small"

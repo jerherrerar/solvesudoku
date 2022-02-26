@@ -1,6 +1,7 @@
 .boardtable {
   border-collapse: collapse;
   font-family: Calibri, sans-serif;
+  color: black;
 }
 .boardcolgroup,
 .boardtbody {
@@ -15,12 +16,12 @@
 }
 
 .oldvalue span {
-  color: white;
+  color: black;
   font-size: 25px;
 }
 
 .newvalue span {
-  color: red;
+  color: #1890ff;
   font-size: 25px;
 }
 
